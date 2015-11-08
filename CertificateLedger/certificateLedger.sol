@@ -37,7 +37,7 @@ contract CertificateLedger
     {
         if(CertificateList.length != 0)
         {
-            if(CertificateList.length > (uint)(ID))
+            if(CertificateList.length >= (uint)(ID))
             {
                 return CertificateList[(uint)(ID-1)].RecipientID;
             }
