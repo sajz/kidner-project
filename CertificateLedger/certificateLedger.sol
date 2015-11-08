@@ -4,14 +4,14 @@ contract CertificateLedger
     {
         int32 CertificateID;
         
-        bytes32 RecipientID;
-        int RecipientHealth;
+        uint RecipientID;
+        uint RecipientHealth;
     
-        bytes32 DonorID;
-        int DonorHealth;
+        uint DonorID;
+        uint DonorHealth;
     
         address DoctorSig;
-        bytes32 Contact;
+        uint Contact;
     
         uint TimeStamp;
         bool ValidPair;
@@ -27,7 +27,7 @@ contract CertificateLedger
         Owner = msg.sender;
     }
     
-    function createNewPair(bytes32 Rid, int256 RHealth, bytes32 Did, int256 DHealth, bytes32 contact, uint256 Date)
+    function createNewPair(uint Rid, uint RHealth, uint Did, uint DHealth, uint contact, uint Date)
     {
         CertificateCount++;
         CertificateList.push(Certificate(CertificateCount, Rid, RHealth, Did, DHealth, msg.sender, contact, Date, true));
@@ -38,7 +38,7 @@ contract CertificateLedger
         return CertificateList.length;
     }
     
-    function GetRecipientID(int32 ID) constant returns (bytes32)
+    function GetRecipientID(int32 ID) constant returns (uint)
     {
         if(CertificateList.length != 0)
         {
@@ -50,7 +50,7 @@ contract CertificateLedger
         return 100;
     }
     
-    function EditCert(uint32 ID, int256 RHealth, int256 DHealth, uint256 Date, bool stillValid)
+    function EditCert(uint32 ID, uint RHealth, uint DHealth, uint Date, bool stillValid)
     {
         Certificate ChangedCert = CertificateList[ID-1];
         
@@ -62,7 +62,7 @@ contract CertificateLedger
         ChangedCert.ValidPair=stillValid;
     }
     
-    function checkCert(uint32 ID) constant returns (bytes32)
+    function checkCert(uint32 ID) constant returns (uint)
     {
          Certificate cert1 = CertificateList[ID-1];
         
@@ -73,8 +73,8 @@ contract CertificateLedger
             if(cert1.ValidPair == false) return 0;
             if(cert2.ValidPair == false) return 0;
    
-            if(((cert1.DonorHealth - cert2.RecipientHealth > 5) || ((cert1.DonorHealth - cert2.RecipientHealth))<(-5))) return 0;
-            if(((cert2.DonorHealth- cert1.RecipientHealth > 5) || ((cert2.DonorHealth - cert1.RecipientHealth))<(-5))) return 0;
+            if((cert1.DonorHealth - cert2.RecipientHealth) > 5) return 0;
+            if((cert2.DonorHealth- cert1.RecipientHealth) > 5) return 0;
             return CertificateList[i].Contact;
         }
     }
