@@ -2,7 +2,7 @@ contract CertificateLedger
 {
     struct Certificate
     {
-        int32 CertificateID;
+        uint CertificateID;
         
         uint RecipientID;
         uint RecipientHealth;
@@ -18,8 +18,9 @@ contract CertificateLedger
     }
     
     
-    int32 CertificateCount=0;
-    Certificate[] CertificateList;                      
+    uint CertificateCount=0;
+
+    mapping(uint => Certificate) CertificateList;
     address Owner;
     
     function CertificateLedger()
@@ -30,32 +31,25 @@ contract CertificateLedger
     function createNewPair(uint Rid, uint RHealth, uint Did, uint DHealth, uint contact, uint Date)
     {
         CertificateCount++;
-        CertificateList.push(Certificate(CertificateCount, Rid, RHealth, Did, DHealth, msg.sender, contact, Date, true));
+        CertificateList[CertificateCount] = (Certificate(CertificateCount, Rid, RHealth, Did, DHealth, msg.sender, contact, Date, true));
     }
+
     
-    function getListLength() constant returns (uint)
-    {
-        return CertificateList.length;
-    }
-    
-     function getrandomnr() constant returns (uint)
+    function getrandomnr() constant returns (uint)
     {
         return 205;
     }
     
     function GetRecipientID(uint ID) constant returns (uint)
     {
-        if(CertificateList.length != 0)
+        if(ID-1 >= 0)
         {
-            if(CertificateList.length >= ID)
-            {
-                return CertificateList[(uint)(ID-1)].RecipientID;
-            }
+            return CertificateList[ID-1].RecipientID;
         }
         return 100;
     }
     
-    function EditCert(uint32 ID, uint RHealth, uint DHealth, uint Date, bool stillValid)
+    function EditCert(uint ID, uint RHealth, uint DHealth, uint Date, bool stillValid)
     {
         Certificate ChangedCert = CertificateList[ID-1];
         
@@ -67,11 +61,11 @@ contract CertificateLedger
         ChangedCert.ValidPair=stillValid;
     }
     
-    function checkCert(uint32 ID) constant returns (uint)
+    function checkCert(uint ID) constant returns (uint)
     {
          Certificate cert1 = CertificateList[ID-1];
         
-        for(uint i=0; i < CertificateList.length; ++i)
+        for(uint i=0; i < CertificateCount; ++i)
         {
             Certificate cert2 = CertificateList[i];
      
