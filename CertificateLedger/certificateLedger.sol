@@ -1,69 +1,25 @@
-contract Certificate {
-
-    bytes32 public RecipientID;
-    int public RecipientHealth;
-    
-    bytes32 public DonorID;
-    int public DonorHealth;
-    
-    address public DoctorSig;
-    
-    uint public TimeStamp;
-    bool public ValidPair;
-    
-    function Certificate(bytes32 Rid, int RHealth, bytes32 Did, int DHealth, uint Date)
-    {
-        RecipientID = Rid;
-        RecipientHealth = RHealth;
-        
-        DonorID = Did;
-        DonorHealth = DHealth;
-        DoctorSig = msg.sender;
-        
-        TimeStamp = Date;
-        ValidPair = true;
-    }
-
-    function setRecHealth(int UpdatedHealth)
-    {
-        if(msg.sender != DoctorSig) return;
-        RecipientHealth = UpdatedHealth;
-    }
-    
-    function setDonHealth(int UpdatedHealth)
-    {
-        if(msg.sender != DoctorSig) return;
-        DonorHealth = UpdatedHealth;
-    }
-    
-    function setTimeStamp(uint UpdatedTime)
-    {
-        if(msg.sender != DoctorSig) return;
-        TimeStamp = UpdatedTime;
-        ValidPair = true;
-    }
-    
-    function setValidity(bool Validity)
-    {
-        if(msg.sender != DoctorSig) return;
-        ValidPair = Validity;
-    }
-    
-    function remove() {
-
-        suicide(msg.sender);
-
-    }
-    
-    function wave() constant returns (string) 
-    { 
-        return "Yay, a kidney cert!"; 
-    }
-}
-
 contract CertificateLedger
 {
-    address[] CertificateList;                      
+    struct Certificate
+    {
+        int32 CertificateID;
+        
+        bytes32 RecipientID;
+        int RecipientHealth;
+    
+        bytes32 DonorID;
+        int DonorHealth;
+    
+        address DoctorSig;
+        bytes32 Contact;
+    
+        uint TimeStamp;
+        bool ValidPair;
+    }
+    
+    
+    int32 CertificateCount=0;
+    Certificate[] CertificateList;                      
     address Owner;
     
     function CertificateLedger()
@@ -71,50 +27,50 @@ contract CertificateLedger
         Owner = msg.sender;
     }
     
-    function createNewPair(bytes32 Rid,int256 RHealth,bytes32 Did,int256 DHealth,uint256 Date ) returns (address)
+    function createNewPair(bytes32 Rid, int256 RHealth, bytes32 Did, int256 DHealth, bytes32 contact, uint256 Date )
     {
-        Certificate newCert = new Certificate(Rid, RHealth, Did, DHealth, Date);
-        
-        CertificateList.push(newCert);
-		
-		return newCert;
+        CertificateCount++;
+        CertificateList.push(Certificate(CertificateCount, Rid, RHealth, Did, DHealth, msg.sender, contact, Date, true));
     }
     
-    function printLastLedgerEntry() constant returns (address)
+    function GetRecipientID(int32 ID) constant returns (bytes32)
     {
         if(CertificateList.length != 0)
         {
-            return CertificateList[CertificateList.length-1];
+            if(CertificateList.length > (uint)(ID))
+            {
+                return CertificateList[(uint)(ID-1)].RecipientID;
+            }
         }
         return 0;
     }
     
-    function EditCert(address cert, int256 RHealth, int256 DHealth, uint256 Date, bool stillValid)
+    function EditCert(uint32 ID, int256 RHealth, int256 DHealth, uint256 Date, bool stillValid)
     {
-        Certificate ChangedCert = Certificate(cert);
+        Certificate ChangedCert = CertificateList[ID-1];
         
-        if(ChangedCert.DoctorSig() != msg.sender) return;
+        if(ChangedCert.DoctorSig != msg.sender) return;
         
-        if(RHealth != 0) ChangedCert.setRecHealth(RHealth);
-        if(DHealth != 0) ChangedCert.setDonHealth(DHealth);
-        if(Date != 0) ChangedCert.setTimeStamp(Date);
-        ChangedCert.setValidity(stillValid);
+        if(RHealth != 0) ChangedCert.RecipientHealth = RHealth;
+        if(DHealth != 0) ChangedCert.DonorHealth=DHealth;
+        if(Date != 0) ChangedCert.TimeStamp=Date;
+        ChangedCert.ValidPair=stillValid;
     }
     
-    function checkCert(address cert) constant returns (address)
+    function checkCert(uint32 ID) constant returns (bytes32)
     {
-        Certificate cert1 = Certificate(cert);
+         Certificate cert1 = CertificateList[ID-1];
         
         for(uint i=0; i < CertificateList.length; ++i)
         {
-            Certificate cert2 = Certificate(CertificateList[i]);
+            Certificate cert2 = CertificateList[i];
      
-            if(cert1.ValidPair()==false) return 0;
-            if(cert2.ValidPair()==false) return 0;
+            if(cert1.ValidPair == false) return 0;
+            if(cert2.ValidPair == false) return 0;
    
-            if(((cert1.DonorHealth() - cert2.RecipientHealth()) > 5) || ((cert1.DonorHealth() - cert2.RecipientHealth())<(-5))) return 0;
-            if(((cert2.DonorHealth() - cert1.RecipientHealth()) > 5) || ((cert2.DonorHealth() - cert1.RecipientHealth())<(-5))) return 0;
-            return CertificateList[i];
+            if(((cert1.DonorHealth - cert2.RecipientHealth > 5) || ((cert1.DonorHealth - cert2.RecipientHealth))<(-5))) return 0;
+            if(((cert2.DonorHealth- cert1.RecipientHealth > 5) || ((cert2.DonorHealth - cert1.RecipientHealth))<(-5))) return 0;
+            return CertificateList[i].Contact;
         }
     }
     
@@ -122,11 +78,6 @@ contract CertificateLedger
     function remove() 
     {
         if(msg.sender == Owner) suicide(msg.sender);
-    }
-    
-    function Certificatewave()
-    { 
-       ((Certificate)(CertificateList[0])).wave(); 
     }
     
     function wave() constant returns (string) 
