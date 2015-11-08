@@ -38,11 +38,16 @@ contract CertificateLedger
         return CertificateList.length;
     }
     
-    function GetRecipientID(int32 ID) constant returns (uint)
+     function getrandomnr() constant returns (uint)
+    {
+        return 205;
+    }
+    
+    function GetRecipientID(uint ID) constant returns (uint)
     {
         if(CertificateList.length != 0)
         {
-            if(CertificateList.length >= (uint)(ID))
+            if(CertificateList.length >= ID)
             {
                 return CertificateList[(uint)(ID-1)].RecipientID;
             }
