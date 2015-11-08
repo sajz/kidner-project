@@ -27,10 +27,15 @@ contract CertificateLedger
         Owner = msg.sender;
     }
     
-    function createNewPair(bytes32 Rid, int256 RHealth, bytes32 Did, int256 DHealth, bytes32 contact, uint256 Date )
+    function createNewPair(bytes32 Rid, int256 RHealth, bytes32 Did, int256 DHealth, bytes32 contact, uint256 Date)
     {
         CertificateCount++;
         CertificateList.push(Certificate(CertificateCount, Rid, RHealth, Did, DHealth, msg.sender, contact, Date, true));
+    }
+    
+    function getListLength() constant returns (uint)
+    {
+        return CertificateList.length;
     }
     
     function GetRecipientID(int32 ID) constant returns (bytes32)
@@ -42,7 +47,7 @@ contract CertificateLedger
                 return CertificateList[(uint)(ID-1)].RecipientID;
             }
         }
-        return 0;
+        return 100;
     }
     
     function EditCert(uint32 ID, int256 RHealth, int256 DHealth, uint256 Date, bool stillValid)
